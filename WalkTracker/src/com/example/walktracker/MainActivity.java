@@ -18,6 +18,7 @@ public class MainActivity extends Activity {
 	  private TextView latitudeField;
 	  private TextView longitudeField;
 	  private LocationListener locationListener;
+	  private boolean tracking = false;
 	  //private int counter = 0;
 	  
 	  private double totalDistance;
@@ -33,7 +34,11 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        totalDistance = 0;
+        startTracking();
+    }
+    
+    private void startTracking() {
+    	totalDistance = 0;
         latitudeField = (TextView) findViewById(R.id.latitude);
         longitudeField = (TextView) findViewById(R.id.longitude);
         
@@ -45,8 +50,7 @@ public class MainActivity extends Activity {
         // Define the criteria how to select the locatioin provider -> use default
         Criteria criteria = new Criteria();
         provider = LocationManager.GPS_PROVIDER;	// TODO change hardcode
-        		//locationManager.getBestProvider(criteria, false);
-        locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
+        		//locationManager.getBestProvider(criteria, false)
         
         Location initialLocation = locationManager.getLastKnownLocation(provider);
 
@@ -61,6 +65,9 @@ public class MainActivity extends Activity {
           latitudeField.setText("Location not available");
           longitudeField.setText("Location not available");
         }
+        
+        tracking = true;
+        locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
     
     /*
@@ -69,8 +76,10 @@ public class MainActivity extends Activity {
     public void start(View view) {
     	TextView tv = (TextView) view;
     	if (tv.getText().equals(getString(R.string.button_start))) {
+    		startTracking();
     		tv.setText(getString(R.string.button_finished));
     	} else {
+    		tracking = false;
     		tv.setText(getString(R.string.button_start));
     	}
     }
@@ -93,13 +102,15 @@ public class MainActivity extends Activity {
   	    currentLong = location.getLongitude();
   	    
   	    Location.distanceBetween(lastLat, lastLong, currentLat, currentLong, distanceMeters);
-  	    totalDistance += distanceMeters[0];
+  	    totalDistance += distanceMeters[0];	
   	    
-  	    lastLat = currentLat;
+  	    // changes current lat/long values to last lat/long values
+  	    lastLat = currentLat;	
   	    lastLong = currentLong;
   	    
   	    textDistanceView.setText("Current Location: " + String.valueOf(totalDistance));
   	    
+  	    // Displays the current gps coordinates
   	    latitudeField.setText(String.valueOf(currentLat));
   	    longitudeField.setText(String.valueOf(currentLong));
   	  }
@@ -129,14 +140,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
       super.onResume();
-      locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
+      if (tracking) locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
 
     // Remove the locationlistener updates when Activity is paused 
     @Override
     protected void onPause() {
       super.onPause();
-      locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
+      if (tracking) locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
     
 
