@@ -18,13 +18,22 @@ public class MainActivity extends Activity {
 	  private TextView latitudeField;
 	  private TextView longitudeField;
 	  private LocationListener locationListener;
-	  private int counter = 0;
+	  //private int counter = 0;
+	  
+	  private double totalDistance;
+	  
+	  private double lastLat;
+	  private double lastLong;
+	  
+	  private double currentLat;
+	  private double currentLong;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        totalDistance = 0;
         latitudeField = (TextView) findViewById(R.id.latitude);
         longitudeField = (TextView) findViewById(R.id.longitude);
         
@@ -33,10 +42,9 @@ public class MainActivity extends Activity {
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         
-        // Define the criteria how to select the locatioin provider -> use
-        // default
+        // Define the criteria how to select the locatioin provider -> use default
         Criteria criteria = new Criteria();
-        provider = LocationManager.GPS_PROVIDER;
+        provider = LocationManager.GPS_PROVIDER;	// TODO change hardcode
         		//locationManager.getBestProvider(criteria, false);
         locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
         
@@ -45,19 +53,19 @@ public class MainActivity extends Activity {
 
         // Initialize the location fields
         if (initialLocation != null) {
-    	    double lat = initialLocation.getLatitude();
-    	    double lng = initialLocation.getLongitude();
-    	    latitudeField.setText(String.valueOf(lat));
-    	    longitudeField.setText(String.valueOf(lng));
-          
+    	    lastLat = initialLocation.getLatitude();	// initialize lastLat
+    	    lastLong = initialLocation.getLongitude();	// initialize lastLong
+    	    latitudeField.setText(String.valueOf(lastLat));
+    	    longitudeField.setText(String.valueOf(lastLong));
         } else {
           latitudeField.setText("Location not available");
           longitudeField.setText("Location not available");
         }
-        
-        
-        
     }
+    
+    /*
+     * 
+     */
     public void start(View view) {
     	TextView tv = (TextView) view;
     	if (tv.getText().equals(getString(R.string.button_start))) {
@@ -67,18 +75,33 @@ public class MainActivity extends Activity {
     	}
     }
     
-    
+    /*
+     * 
+     */
     public class MyLocationListener implements LocationListener {
 
   	  @Override
   	  public void onLocationChanged(Location location) {
-  		counter++;  
-  		TextView textD = (TextView) findViewById(R.id.textDistance);
-  		textD.setText(String.valueOf(counter));
-  	    double lat = location.getLatitude();
-  	    double lng = location.getLongitude();
-  	    latitudeField.setText(String.valueOf(lat));
-  	    longitudeField.setText(String.valueOf(lng));
+  		//counter++;  
+  		//textD.setText(String.valueOf(counter));
+  		  
+  		TextView textDistanceView = (TextView) findViewById(R.id.textDistance);
+  		  
+  		float[] distanceMeters = new float[4];
+  		  
+  	    currentLat = location.getLatitude();
+  	    currentLong = location.getLongitude();
+  	    
+  	    Location.distanceBetween(lastLat, lastLong, currentLat, currentLong, distanceMeters);
+  	    totalDistance += distanceMeters[0];
+  	    
+  	    lastLat = currentLat;
+  	    lastLong = currentLong;
+  	    
+  	    textDistanceView.setText("Current Location: " + String.valueOf(totalDistance));
+  	    
+  	    latitudeField.setText(String.valueOf(currentLat));
+  	    longitudeField.setText(String.valueOf(currentLong));
   	  }
 
   	  @Override
