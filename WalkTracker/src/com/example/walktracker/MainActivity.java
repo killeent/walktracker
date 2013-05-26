@@ -18,7 +18,7 @@ public class MainActivity extends Activity {
 	  private TextView latitudeField;
 	  private TextView longitudeField;
 	  private LocationListener locationListener;
-	  private int counter = 0;
+	  // private int counter = 0;
 	  private boolean tracking = false;
 	
     @Override
@@ -79,10 +79,8 @@ public class MainActivity extends Activity {
     public class MyLocationListener implements LocationListener {
 
   	  @Override
-  	  public void onLocationChanged(Location location) {
-  		counter++;  
+  	  public void onLocationChanged(Location location) {  
   		TextView textD = (TextView) findViewById(R.id.textDistance);
-  		textD.setText(String.valueOf(counter));
   	    double lat = location.getLatitude();
   	    double lng = location.getLongitude();
   	    latitudeField.setText(String.valueOf(lat));
