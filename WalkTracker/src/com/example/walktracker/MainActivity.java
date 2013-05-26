@@ -1,52 +1,118 @@
 package com.example.walktracker;
 
-import java.util.Timer;
-
 import android.app.Activity;
+import android.content.Context;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
+	  private LocationManager locationManager;
+	  private String provider;
+	  private TextView latitudeField;
+	  private TextView longitudeField;
+	  private LocationListener locationListener;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
+        
+        latitudeField = (TextView) findViewById(R.id.latitude);
+        longitudeField = (TextView) findViewById(R.id.longitude);
+        
+        locationListener = new MyLocationListener();
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_main, menu);
-        return true;
+        // Get the location manager
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        
+        // Define the criteria how to select the locatioin provider -> use
+        // default
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, false);
+        locationManager.requestLocationUpdates(provider, 400, 1, locationListener);
+        
+        Location initialLocation = locationManager.getLastKnownLocation(provider);
+
+
+        // Initialize the location fields
+        if (initialLocation != null) {
+    	    double lat = initialLocation.getLatitude();
+    	    double lng = initialLocation.getLongitude();
+    	    latitudeField.setText(String.valueOf(lat));
+    	    longitudeField.setText(String.valueOf(lng));
+          
+        } else {
+          latitudeField.setText("Location not available");
+          longitudeField.setText("Location not available");
+        }
+        
+        
+        
     }
-    
-    private static boolean tracking = true;
-    private static double distance = 0.0;
-    
+/*
     public void start(View view) {
     	TextView tv = (TextView) view;
     	if (tv.getText().equals(getString(R.string.button_start))) {
     		tv.setText(getString(R.string.button_finished));
-    		startTracking();
     	} else {
     		tv.setText(getString(R.string.button_start));
-    		stopTracking();
     	}
     }
+  */  
     
-    private void startTracking() {
-    	Timer tracker = new Timer();
+    public class MyLocationListener implements LocationListener {
+
+  	  @Override
+  	  public void onLocationChanged(Location location) {
+  		
+  	    double lat = location.getLatitude();
+  	    double lng = location.getLongitude();
+  	    latitudeField.setText(String.valueOf(lat));
+  	    longitudeField.setText(String.valueOf(lng));
+  	  }
+
+  	  @Override
+  	  public void onStatusChanged(String provider, int status, Bundle extras) {
+  	    // TODO Auto-generated method stub
+
+  	  }
+
+  	  @Override
+  	  public void onProviderEnabled(String provider) {
+  	    Toast.makeText((Context) locationListener, "Enabled new provider " + provider,
+  	        Toast.LENGTH_SHORT).show();
+
+  	  }
+
+  	  @Override
+  	  public void onProviderDisabled(String provider) {
+  	    Toast.makeText((Context) locationListener, "Disabled provider " + provider,
+  	        Toast.LENGTH_SHORT).show();
+  	  }
+
+  }
+   
+    // Request updates at startup 
+    @Override
+    protected void onResume() {
+      super.onResume();
+      locationManager.requestLocationUpdates(provider, 400, 1, locationListener);
+    }
+
+    // Remove the locationlistener updates when Activity is paused 
+    @Override
+    protected void onPause() {
+      super.onPause();
+      locationManager.removeUpdates(locationListener);
     }
     
-    private void getLocationInfo() {
-    	
-    }
-    
-    private void stopTracking() {
-    	return;
-    }
+
     
 }
