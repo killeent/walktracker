@@ -19,29 +19,45 @@ public class MainActivity extends Activity {
 	  private TextView longitudeField;
 	  private LocationListener locationListener;
 	  private int counter = 0;
+	  private boolean tracking = false;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+    }
+    
+    public void start(View view) {
+    	TextView tv = (TextView) view;
+    	if (tv.getText().equals(getString(R.string.button_start))) {
+    		startTracking();
+    		tv.setText(getString(R.string.button_finished));
+    	} else {
+    		tracking = false;
+    		tv.setText(getString(R.string.button_start));
+    	}
+    }
+    
+    private void startTracking() {
+        // get text fields to update
         latitudeField = (TextView) findViewById(R.id.latitude);
         longitudeField = (TextView) findViewById(R.id.longitude);
         
+        // get the location listener
         locationListener = new MyLocationListener();
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        
-        // Define the criteria how to select the locatioin provider -> use
+    	
+    	// Define the criteria how to select the location provider -> use
         // default
         Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
         provider = LocationManager.GPS_PROVIDER;
         		//locationManager.getBestProvider(criteria, false);
-        locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
         
+        // grab first location manually
         Location initialLocation = locationManager.getLastKnownLocation(provider);
-
 
         // Initialize the location fields
         if (initialLocation != null) {
@@ -55,16 +71,8 @@ public class MainActivity extends Activity {
           longitudeField.setText("Location not available");
         }
         
-        
-        
-    }
-    public void start(View view) {
-    	TextView tv = (TextView) view;
-    	if (tv.getText().equals(getString(R.string.button_start))) {
-    		tv.setText(getString(R.string.button_finished));
-    	} else {
-    		tv.setText(getString(R.string.button_start));
-    	}
+        tracking = true;
+        locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
     
     
@@ -106,16 +114,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
       super.onResume();
-      locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
+      if (tracking) locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
 
-    // Remove the locationlistener updates when Activity is paused 
+    // ensure tracking continues when app is paused
     @Override
     protected void onPause() {
       super.onPause();
-      locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
+      if (tracking) locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
-    
-
     
 }
