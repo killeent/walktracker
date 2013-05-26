@@ -18,6 +18,7 @@ public class MainActivity extends Activity {
 	  private TextView latitudeField;
 	  private TextView longitudeField;
 	  private LocationListener locationListener;
+	  private int counter = 0;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +36,9 @@ public class MainActivity extends Activity {
         // Define the criteria how to select the locatioin provider -> use
         // default
         Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, false);
-        locationManager.requestLocationUpdates(provider, 400, 1, locationListener);
+        provider = LocationManager.GPS_PROVIDER;
+        		//locationManager.getBestProvider(criteria, false);
+        locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
         
         Location initialLocation = locationManager.getLastKnownLocation(provider);
 
@@ -56,7 +58,6 @@ public class MainActivity extends Activity {
         
         
     }
-/*
     public void start(View view) {
     	TextView tv = (TextView) view;
     	if (tv.getText().equals(getString(R.string.button_start))) {
@@ -65,13 +66,15 @@ public class MainActivity extends Activity {
     		tv.setText(getString(R.string.button_start));
     	}
     }
-  */  
+    
     
     public class MyLocationListener implements LocationListener {
 
   	  @Override
   	  public void onLocationChanged(Location location) {
-  		
+  		counter++;  
+  		TextView textD = (TextView) findViewById(R.id.textDistance);
+  		textD.setText(String.valueOf(counter));
   	    double lat = location.getLatitude();
   	    double lng = location.getLongitude();
   	    latitudeField.setText(String.valueOf(lat));
@@ -103,14 +106,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
       super.onResume();
-      locationManager.requestLocationUpdates(provider, 400, 1, locationListener);
+      locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
 
     // Remove the locationlistener updates when Activity is paused 
     @Override
     protected void onPause() {
       super.onPause();
-      locationManager.removeUpdates(locationListener);
+      locationManager.requestLocationUpdates(provider, 400, 0, locationListener);
     }
     
 
